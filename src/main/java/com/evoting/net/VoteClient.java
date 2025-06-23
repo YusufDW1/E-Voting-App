@@ -10,19 +10,26 @@ package com.evoting.net;
  */
 import java.io.*;
 import java.net.*;
+import com.mongodb.client.*;
+import org.bson.Document;
 
-public class VoteClient {
+public class VoteClient extends Thread {
 
-    private String candidate;
+    private final String candidate;
 
     public VoteClient(String candidate) {
         this.candidate = candidate;
     }
 
+    @Override
     public void run() {
-        try (Socket socket = new Socket("localhost", 5000); PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
-            out.println(candidate);
-        } catch (IOException e) {
+        try (MongoClient client = MongoClients.create("mongodb://localhost:27017")) {
+            MongoDatabase db = client.getDatabase("evoting");
+            MongoCollection<Document> votes = db.getCollection("votes");
+
+            Document vote = new Document("candidate", candidate);
+            votes.insertOne(vote);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

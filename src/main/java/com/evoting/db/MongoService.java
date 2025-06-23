@@ -12,6 +12,7 @@ import com.evoting.model.User;
 import com.mongodb.client.*;
 import static com.mongodb.client.model.Filters.eq;
 import org.bson.Document;
+import static com.mongodb.client.model.Updates.set;
 
 public class MongoService {
 
@@ -24,6 +25,10 @@ public class MongoService {
                 .append("password", user.getHashedPassword())
                 .append("hasVoted", user.isHasVoted());
         users.insertOne(doc);
+    }
+
+    public static void markUserVoted(String username) {
+        users.updateOne(eq("username", username), set("hasVoted", true));
     }
 
     public static User getUserByUsername(String username) {

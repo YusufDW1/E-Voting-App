@@ -4,16 +4,19 @@
  */
 package com.evoting.gui;
 
+import com.evoting.model.User;
+import javax.swing.JFrame;
+
 /**
  *
  * @author YusufDS
  */
-public class VotingFrame extends javax.swing.JFrame {
+public class VotingFrame extends JFrame {
 
-    /**
-     * Creates new form VotingFrame
-     */
-    public VotingFrame() {
+    private User user;
+    
+    public VotingFrame(User user) {
+        this.user = user;
         initComponents();
     }
 
