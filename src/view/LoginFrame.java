@@ -73,7 +73,9 @@ public class LoginFrame extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(168, 168, 168)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(title)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(title)
+                        .addContainerGap(196, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel2)
@@ -81,16 +83,17 @@ public class LoginFrame extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(txtUsername, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE)
-                            .addComponent(txtPassword)))
+                            .addComponent(txtPassword))
+                        .addContainerGap(142, Short.MAX_VALUE))))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(3, 3, 3)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(lblLoginMessage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(btnGoToRegister)
-                                .addGap(76, 76, 76)
-                                .addComponent(btnLogin)))))
-                .addContainerGap(142, Short.MAX_VALUE))
+                        .addComponent(btnGoToRegister)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnLogin))
+                    .addComponent(lblLoginMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(175, 175, 175))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -107,11 +110,11 @@ public class LoginFrame extends javax.swing.JFrame {
                     .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(43, 43, 43)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnLogin)
-                    .addComponent(btnGoToRegister))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblLoginMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(31, Short.MAX_VALUE))
+                    .addComponent(btnGoToRegister)
+                    .addComponent(btnLogin))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lblLoginMessage, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(10, Short.MAX_VALUE))
         );
 
         pack();
@@ -126,29 +129,35 @@ public class LoginFrame extends javax.swing.JFrame {
             return;
         }
 
-        // Ambil user dari Mongo
+        // Ambil user dari database
         User user = MongoHelper.getUser(username);
         if (user == null) {
-            lblLoginMessage.setText("⚠️ Username tidak ditemukan.");
+            lblLoginMessage.setText("⚠️ Username tidak ditemukan");
             return;
         }
 
         // Verifikasi password
         if (!PBKDF2Helper.verifyPassword(password, user.getPasswordHash())) {
-            lblLoginMessage.setText("⚠ Password Salah");
+            lblLoginMessage.setText("⚠️ Password salah");
             return;
         }
 
-        // Cek status voting
+        // Admin: langsung ke dashboard
+        if ("admin".equalsIgnoreCase(user.getUsername())) {
+            new AdminDashboardFrame().setVisible(true);
+            this.dispose();
+            return;
+        }
+
+        // Cek apakah sudah voting
         if (user.isVoted()) {
-            lblLoginMessage.setText("⚠️ Kamu sudah pernah voting");
+            lblLoginMessage.setText("⚠️ Kamu sudah melakukan voting");
             return;
         }
 
-        // Sukses login → buka VotingFrame
+        // Login sukses → VotingFrame
         JOptionPane.showMessageDialog(this, "Login berhasil!");
-        VotingFrame votingFrame = new VotingFrame(user); // kirim User
-        votingFrame.setVisible(true);
+        new VotingFrame(user).setVisible(true);
         this.dispose();
     }//GEN-LAST:event_btnLoginActionPerformed
 

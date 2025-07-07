@@ -17,17 +17,14 @@ import org.bson.Document;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.table.DefaultTableModel;
 
 public class MongoHelper {
 
-    private static final String DB_NAME = "voting_db";
-    private static final String USER_COLLECTION = "users";
-    private static final String CANDIDATE_COLLECTION = "candidates";
-
     private static final MongoClient mongoClient = MongoClients.create();
-    private static final MongoDatabase database = mongoClient.getDatabase(DB_NAME);
-    private static final MongoCollection<Document> userCol = database.getCollection(USER_COLLECTION);
-    private static final MongoCollection<Document> candidateCol = database.getCollection(CANDIDATE_COLLECTION);
+    private static final MongoDatabase database = mongoClient.getDatabase("voting_db");
+    private static final MongoCollection<Document> userCol = database.getCollection("users");
+    private static final MongoCollection<Document> candidateCol = database.getCollection("candidates");
 
     // Tambah user baru
     public static void insertUser(User user) {
@@ -73,6 +70,10 @@ public class MongoHelper {
         }
         return list;
     }
+    
+    public static MongoCollection<Document> getCandidateCollection() {
+        return candidateCol;
+    }
 
     // Tambah 1 vote ke kandidat
     public static void incrementVote(String candidateName) {
@@ -81,4 +82,36 @@ public class MongoHelper {
                 Updates.inc("vote_count", 1)
         );
     }
+
+    public static Candidate getCandidateByName(String name) {
+        Document doc = candidateCol.find(Filters.eq("name", name)).first();
+        if (doc == null) {
+            return null;
+        }
+
+        Candidate c = new Candidate(doc.getString("name"));
+        for (int i = 0; i < doc.getInteger("vote_count", 0); i++) {
+            c.incrementVote();
+        }
+        return c;
+    }
+
+    public static void addCandidate(Candidate candidate) {
+        Document doc = new Document("name", candidate.getName())
+                .append("vote_count", candidate.getVoteCount());
+        candidateCol.insertOne(doc);
+    }
+
+    public static void updateCandidate(String oldName, String newName) {
+        candidateCol.updateOne(
+                Filters.eq("name", oldName),
+                Updates.set("name", newName)
+        );
+
+    }
+
+    public static void deleteCandidate(String name) {
+        candidateCol.deleteOne(Filters.eq("name", name));
+    }
+
 }
